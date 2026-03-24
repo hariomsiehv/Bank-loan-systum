@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login / Register — LoanFlow</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { background: linear-gradient(135deg, var(--charcoal) 0%, var(--teal-dark) 100%); min-height: 100vh; display: flex; flex-direction: column; }
+    .login-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    .login-box {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 440px;
+    }
+    .login-logo {
+      text-align: center;
+      margin-bottom: 1.75rem;
+    }
+    .login-logo h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: var(--teal-dark);
+    }
+    .login-logo h1 span { color: var(--gold); }
+    .login-logo p { font-size: 0.85rem; color: var(--grey-500); margin-top: 0.25rem; }
+    .divider {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin: 1.5rem 0;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--grey-300);
+    }
+    .divider span { font-size: 0.8rem; color: var(--grey-500); }
+    .admin-hint {
+      background: var(--mint);
+      border: 1px solid var(--teal-light);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1rem;
+      font-size: 0.82rem;
+      color: var(--teal-dark);
+      margin-top: 1rem;
+    }
+    .admin-hint strong { display: block; margin-bottom: 0.2rem; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="navbar-brand">Loan<span>Flow</span></a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="apply.html">Apply</a>
+    <a href="tracker.html">Track</a>
+  </div>
+</nav>
+
+<div class="login-wrap">
+  <div class="login-box">
+    <div class="login-logo">
+      <h1>Loan<span>Flow</span></h1>
+      <p>Smart. Fast. Paperless Banking</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+      <button class="tab-btn" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <!-- Alert -->
+    <div id="auth-alert" class="alert" style="display:none"></div>
+
+    <!-- LOGIN FORM -->
+    <div id="tab-login" class="tab-content active">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="login-email" placeholder="aapka@email.com" />
+        <div class="field-error" id="le-err">Valid email dalein</div>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-pass" placeholder="••••••••" />
+        <div class="field-error" id="lp-err">Password required hai</div>
+      </div>
+      <button class="btn btn-teal" style="width:100%;justify-content:center;margin-top:0.5rem" onclick="doLogin()">
+        🔐 Login Karein
+      </button>
+
+      <div class="admin-hint">
+        <strong>🛡 Admin Login Details:</strong>
+        Email: <code>admin@bank.com</code> &nbsp; Password: <code>admin123</code>
+      </div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="tab-register" class="tab-content">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="reg-name" placeholder="Aapka Poora Naam" />
+        <div class="field-error" id="rn-err">Naam required hai</div>
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="reg-email" placeholder="aapka@email.com" />
+        <div class="field-error" id="re-err">Valid email dalein</div>
+      </div>
+      <div class="form-group">
+        <label>Mobile Number</label>
+        <input type="tel" id="reg-phone" placeholder="10-digit mobile number" maxlength="10" />
+        <div class="field-error" id="rph-err">10-digit number dalein</div>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="reg-pass" placeholder="Min 6 characters" />
+        <div class="field-error" id="rp-err">Min 6 characters required</div>
+      </div>
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <input type="password" id="reg-confirm" placeholder="Same password dobara dalein" />
+        <div class="field-error" id="rc-err">Passwords match nahi kar rahe</div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:0.5rem" onclick="doRegister()">
+        🚀 Account Banayein
+      </button>
+    </div>
+
+    <div class="divider"><span>ya</span></div>
+    <a href="index.html" class="btn" style="width:100%;justify-content:center;background:var(--grey-100);color:var(--text)">← Wapas Home Jayein</a>
+  </div>
+</div>
+
+<footer>
+  <p>LoanFlow &mdash; BIT-155 | MMMUT Gorakhpur | Hariom Prajapati | 2025071131</p>
+</footer>
+
+<script src="auth.js"></script>
+<script>
+  // If already logged in, redirect
+  if (Auth.isLoggedIn()) {
+    const s = Auth.getSession();
+    window.location.href = s.role === 'admin' ? 'admin.html' : 'tracker.html';
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach((b, i) => {
+      b.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
+    });
+    document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+    document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+    hideAlert();
+  }
+
+  function showAlert(msg, type) {
+    const el = document.getElementById('auth-alert');
+    el.textContent = msg;
+    el.className = 'alert alert-' + type;
+    el.style.display = 'flex';
+  }
+
+  function hideAlert() {
+    document.getElementById('auth-alert').style.display = 'none';
+  }
+
+  function fieldErr(id, show) {
+    document.getElementById(id).classList.toggle('show', show);
+  }
+
+  function doLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const pass  = document.getElementById('login-pass').value;
+    let ok = true;
+    fieldErr('le-err', !email.includes('@')); if (!email.includes('@')) ok = false;
+    fieldErr('lp-err', !pass); if (!pass) ok = false;
+    if (!ok) return;
+    const res = Auth.login(email, pass);
+    if (res.success) {
+      showAlert('Login successful! Redirect ho rahe hain...', 'success');
+      setTimeout(() => {
+        window.location.href = res.user.role === 'admin' ? 'admin.html' : 'tracker.html';
+      }, 900);
+    } else {
+      showAlert(res.message, 'error');
+    }
+  }
+
+  function doRegister() {
+    const name    = document.getElementById('reg-name').value.trim();
+    const email   = document.getElementById('reg-email').value.trim();
+    const phone   = document.getElementById('reg-phone').value.trim();
+    const pass    = document.getElementById('reg-pass').value;
+    const confirm = document.getElementById('reg-confirm').value;
+    let ok = true;
+    fieldErr('rn-err', !name);             if (!name) ok = false;
+    fieldErr('re-err', !email.includes('@')); if (!email.includes('@')) ok = false;
+    fieldErr('rph-err', phone.length !== 10); if (phone.length !== 10) ok = false;
+    fieldErr('rp-err', pass.length < 6);   if (pass.length < 6) ok = false;
+    fieldErr('rc-err', pass !== confirm);  if (pass !== confirm) ok = false;
+    if (!ok) return;
+    const res = Auth.register({ name, email, password: pass, phone });
+    if (res.success) {
+      showAlert(res.message + ' Ab login karein.', 'success');
+      setTimeout(() => switchTab('login'), 1200);
+    } else {
+      showAlert(res.message, 'error');
+    }
+  }
+
+  // Enter key support
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      if (document.getElementById('tab-login').classList.contains('active')) doLogin();
+      else doRegister();
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loan Apply Karein — LoanFlow</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .apply-layout { display: grid; grid-template-columns: 1fr 380px; gap: 2rem; max-width: 1100px; margin: 0 auto; padding: 2rem; }
+    @media(max-width:900px) { .apply-layout { grid-template-columns: 1fr; } }
+
+    .sidebar-sticky { position: sticky; top: 80px; }
+
+    .emi-result-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--grey-300); }
+    .emi-result-row:last-child { border-bottom: none; }
+    .emi-result-row .label { font-size: 0.85rem; color: var(--grey-500); }
+    .emi-result-row .value { font-weight: 700; color: var(--text); }
+    .emi-result-row.highlight .value { font-size: 1.4rem; color: var(--teal-dark); font-family: 'Playfair Display', serif; }
+
+    .range-row { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--grey-500); margin-top: 0.3rem; }
+
+    .score-green  { color: #1a7a3c; }
+    .score-yellow { color: #a06800; }
+    .score-red    { color: var(--red); }
+
+    .loan-type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+    .loan-type-btn {
+      border: 2px solid var(--grey-300);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      background: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .loan-type-btn .icon { font-size: 1.4rem; display: block; margin-bottom: 0.25rem; }
+    .loan-type-btn:hover { border-color: var(--teal); background: var(--mint); }
+    .loan-type-btn.selected { border-color: var(--teal); background: var(--mint); color: var(--teal-dark); }
+
+    .form-section { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 2rem; margin-bottom: 1.5rem; }
+    .form-section-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--teal-dark); margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--grey-300); }
+
+    .doc-list { display: flex; flex-direction: column; gap: 0.5rem; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="navbar-brand">Loan<span>Flow</span></a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="apply.html" class="active">Apply</a>
+    <a href="tracker.html">Track</a>
+    <a href="admin.html">Admin</a>
+    <a href="login.html" class="nav-btn btn" id="nav-auth">Login</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <h1>🏦 Loan Application</h1>
+  <p>Sabse pehle eligibility check karein, phir EMI plan karein, phir apply karein</p>
+</div>
+
+<div class="apply-layout">
+
+  <!-- LEFT: MAIN FORM -->
+  <div>
+
+    <!-- STEP 1: LOAN TYPE -->
+    <div class="form-section">
+      <div class="form-section-title">① Loan Type Chunein</div>
+      <div class="loan-type-grid" id="lt-grid"></div>
+      <input type="hidden" id="selected-type" />
+      <div class="field-error show" id="lt-err" style="display:none!important">Loan type select karein</div>
+    </div>
+
+    <!-- STEP 2: PERSONAL INFO -->
+    <div class="form-section">
+      <div class="form-section-title">② Personal Information</div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="f-name" placeholder="Aapka poora naam" />
+          <div class="field-error" id="err-name">Naam required hai</div>
+        </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" id="f-email" placeholder="email@example.com" />
+          <div class="field-error" id="err-email">Valid email dalein</div>
+        </div>
+        <div class="form-group">
+          <label>Mobile Number *</label>
+          <input type="tel" id="f-phone" placeholder="10 digit number" maxlength="10" />
+          <div class="field-error" id="err-phone">10-digit number dalein</div>
+        </div>
+        <div class="form-group">
+          <label>Age *</label>
+          <input type="number" id="f-age" placeholder="Jaise: 28" min="18" max="70" />
+          <div class="field-error" id="err-age">Age 18-70 honi chahiye</div>
+        </div>
+        <div class="form-group">
+          <label>PAN Number *</label>
+          <input type="text" id="f-pan" placeholder="ABCDE1234F" maxlength="10" style="text-transform:uppercase" />
+          <div class="field-error" id="err-pan">Valid PAN dalein (10 chars)</div>
+        </div>
+        <div class="form-group">
+          <label>Aadhaar Number *</label>
+          <input type="text" id="f-aadhaar" placeholder="12-digit number" maxlength="12" />
+          <div class="field-error" id="err-aadhaar">12-digit Aadhaar dalein</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: FINANCIAL INFO + ELIGIBILITY -->
+    <div class="form-section">
+      <div class="form-section-title">③ Financial Details &amp; Eligibility Check</div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Monthly Income (₹) *</label>
+          <input type="number" id="f-income" placeholder="Jaise: 50000" oninput="updateEligibility()" />
+          <div class="field-error" id="err-income">Income required hai</div>
+        </div>
+        <div class="form-group">
+          <label>Employment Type *</label>
+          <select id="f-emp" onchange="updateEligibility()">
+            <option value="">-- Select --</option>
+            <option value="sarkari">Sarkari Naukri (Govt.)</option>
+            <option value="private">Private Job</option>
+            <option value="self">Self-Employed</option>
+            <option value="business">Business Owner</option>
+            <option value="other">Other</option>
+          </select>
+          <div class="field-error" id="err-emp">Employment type chunein</div>
+        </div>
+        <div class="form-group">
+          <label>CIBIL Score *</label>
+          <input type="number" id="f-cibil" placeholder="300-900" min="300" max="900" oninput="updateEligibility()" />
+          <div class="field-error" id="err-cibil">CIBIL 300-900 ke beech hona chahiye</div>
+        </div>
+        <div class="form-group" style="align-self:end">
+          <button type="button" class="btn btn-teal" style="width:100%;justify-content:center" onclick="updateEligibility()">
+            🔍 Check Eligibility
+          </button>
+        </div>
+      </div>
+
+      <!-- Eligibility Result -->
+      <div id="eligibility-result" style="display:none;margin-top:1rem">
+        <div class="score-wrap">
+          <div class="score-value" id="score-val">0</div>
+          <div class="score-label" id="score-lbl">—</div>
+          <div class="score-bar-wrap"><div class="score-bar" id="score-bar"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--grey-500)">
+            <span>0</span><span>50</span><span>100</span>
+          </div>
+          <div id="score-reasons" style="margin-top:1rem;text-align:left"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: LOAN AMOUNT + TENURE -->
+    <div class="form-section">
+      <div class="form-section-title">④ Loan Amount &amp; Tenure</div>
+      <div class="form-group">
+        <label>Loan Amount: <strong id="amt-label">₹5,00,000</strong></label>
+        <input type="range" id="f-amount" min="50000" max="5000000" step="10000" value="500000" oninput="updateEMI()" />
+        <div class="range-row"><span>₹50,000</span><span id="amt-max-label">₹50,00,000</span></div>
+      </div>
+      <div class="form-group" style="margin-top:1rem">
+        <label>Tenure: <strong id="tenure-label">36 Months</strong></label>
+        <input type="range" id="f-tenure" min="6" max="240" step="6" value="36" oninput="updateEMI()" />
+        <div class="range-row"><span>6 Months</span><span id="tenure-max-label">240 Months</span></div>
+      </div>
+    </div>
+
+    <!-- STEP 5: DOCUMENT UPLOAD -->
+    <div class="form-section">
+      <div class="form-section-title">⑤ Documents Upload Karein</div>
+      <p style="font-size:0.88rem;color:var(--grey-500);margin-bottom:1rem">Max 2MB per file | Allowed: PDF, JPG, PNG</p>
+
+      <div class="doc-list">
+        <div id="doc-pan-wrap">
+          <label style="text-transform:none;font-size:0.9rem;margin-bottom:0.5rem">📄 PAN Card *</label>
+          <div class="upload-zone" onclick="document.getElementById('doc-pan').click()" id="zone-pan">
+            <span style="font-size:1.5rem">📤</span>
+            <p>Click karein ya drag karein (PDF/JPG/PNG, max 2MB)</p>
+          </div>
+          <input type="file" id="doc-pan" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleUpload('pan', this)" />
+          <div id="file-pan" class="doc-file-display"></div>
+        </div>
+
+        <div id="doc-aadhaar-wrap">
+          <label style="text-transform:none;font-size:0.9rem;margin-bottom:0.5rem">📄 Aadhaar Card *</label>
+          <div class="upload-zone" onclick="document.getElementById('doc-aadhaar').click()" id="zone-aadhaar">
+            <span style="font-size:1.5rem">📤</span>
+            <p>Click karein ya drag karein</p>
+          </div>
+          <input type="file" id="doc-aadhaar" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleUpload('aadhaar', this)" />
+          <div id="file-aadhaar" class="doc-file-display"></div>
+        </div>
+
+        <div id="doc-income-wrap">
+          <label style="text-transform:none;font-size:0.9rem;margin-bottom:0.5rem">📄 Income Proof *</label>
+          <div class="upload-zone" onclick="document.getElementById('doc-income').click()" id="zone-income">
+            <span style="font-size:1.5rem">📤</span>
+            <p>Salary slip ya ITR return</p>
+          </div>
+          <input type="file" id="doc-income" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleUpload('income', this)" />
+          <div id="file-income" class="doc-file-display"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBMIT -->
+    <div class="form-section">
+      <div id="submit-alert" class="alert" style="display:none;margin-bottom:1rem"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:1.05rem;padding:1rem" onclick="submitApplication()">
+        🚀 Application Submit Karein
+      </button>
+      <p style="font-size:0.78rem;color:var(--grey-500);text-align:center;margin-top:0.75rem">
+        Submit karne se pehle login zaroori hai. &nbsp; <a href="login.html" style="color:var(--teal)">Login / Register</a>
+      </p>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: SIDEBAR -->
+  <div class="sidebar-sticky">
+
+    <!-- EMI Card -->
+    <div class="card" style="margin-bottom:1.5rem">
+      <div style="font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--teal-dark);margin-bottom:1rem">🧮 EMI Calculator</div>
+      <div class="emi-result-row highlight">
+        <span class="label">Monthly EMI</span>
+        <span class="value" id="emi-val">₹15,506</span>
+      </div>
+      <div class="emi-result-row">
+        <span class="label">Loan Amount</span>
+        <span class="value" id="emi-principal">₹5,00,000</span>
+      </div>
+      <div class="emi-result-row">
+        <span class="label">Interest Rate</span>
+        <span class="value" id="emi-rate">10.5% p.a.</span>
+      </div>
+      <div class="emi-result-row">
+        <span class="label">Tenure</span>
+        <span class="value" id="emi-tenure">36 Months</span>
+      </div>
+      <div class="emi-result-row">
+        <span class="label">Total Interest</span>
+        <span class="value" id="emi-interest" style="color:var(--red)">₹58,216</span>
+      </div>
+      <div class="emi-result-row">
+        <span class="label">Total Payable</span>
+        <span class="value" id="emi-total" style="color:var(--teal-dark)">₹5,58,216</span>
+      </div>
+      <div style="margin-top:1rem;background:var(--grey-100);border-radius:var(--radius-sm);overflow:hidden;height:8px">
+        <div id="interest-bar" style="height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));width:10%;transition:width 0.4s ease"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--grey-500);margin-top:0.25rem">
+        <span id="bar-principal-pct">90%</span><span id="bar-interest-pct">10% interest</span>
+      </div>
+    </div>
+
+    <!-- Tips Card -->
+    <div class="card" style="background:linear-gradient(135deg,var(--mint),var(--white))">
+      <div style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--teal-dark);margin-bottom:0.75rem">💡 Tips</div>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:0.6rem;font-size:0.83rem;color:var(--grey-700)">
+        <li>✅ CIBIL 750+ best rate milta hai</li>
+        <li>✅ Tenure badhane se EMI kam hoti hai</li>
+        <li>✅ Income ka 40% se zyada EMI na rakhein</li>
+        <li>✅ Sab documents ready rakhein apply se pehle</li>
+        <li>✅ Eligibility 65+ ho toh best chances hain</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- SUCCESS MODAL -->
+<div class="modal-overlay" id="success-modal">
+  <div class="modal" style="text-align:center">
+    <div style="font-size:4rem;margin-bottom:1rem">🎉</div>
+    <div class="modal-title">Application Submit Ho Gayi!</div>
+    <p style="color:var(--grey-500);margin-bottom:1rem">Aapki application ID:</p>
+    <div style="font-size:1.3rem;font-weight:900;color:var(--teal-dark);margin-bottom:1.5rem" id="modal-app-id">APP123456</div>
+    <p style="font-size:0.88rem;color:var(--grey-500);margin-bottom:2rem">Status tracker pe track karein. Bank 2-3 business days mein review karega.</p>
+    <div style="display:flex;gap:1rem;justify-content:center">
+      <a href="tracker.html" class="btn btn-teal">📊 Track Karein</a>
+      <a href="index.html" class="btn" style="background:var(--grey-100);color:var(--text)">Home</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>LoanFlow &mdash; BIT-155 | MMMUT Gorakhpur | Hariom Prajapati | 2025071131</p>
+</footer>
+
+<script src="auth.js"></script>
+<script src="app.js"></script>
+<script>
+  let selectedType = null;
+  let uploadedDocs = {};
+  let eligibilityScore = 0;
+
+  // Build loan type grid
+  const ltGrid = document.getElementById('lt-grid');
+  App.getLoanTypes().forEach(lt => {
+    const btn = document.createElement('button');
+    btn.className = 'loan-type-btn';
+    btn.type = 'button';
+    btn.dataset.id = lt.id;
+    btn.innerHTML = `<span class="icon">${lt.icon}</span>${lt.name}<br><small style="color:var(--teal);font-weight:700">${lt.rate}%</small>`;
+    btn.onclick = () => selectLoanType(lt.id);
+    ltGrid.appendChild(btn);
+  });
+
+  // Pre-select from URL param
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlType = urlParams.get('type');
+  if (urlType) selectLoanType(urlType);
+
+  function selectLoanType(id) {
+    selectedType = id;
+    document.querySelectorAll('.loan-type-btn').forEach(b => {
+      b.classList.toggle('selected', b.dataset.id === id);
+    });
+    const lt = App.getLoanType(id);
+    if (lt) {
+      // Update range limits
+      document.getElementById('f-amount').max = lt.maxAmount;
+      document.getElementById('f-amount').value = Math.min(500000, lt.maxAmount);
+      document.getElementById('f-tenure').max = lt.maxTenure;
+      document.getElementById('f-tenure').value = Math.min(36, lt.maxTenure);
+      document.getElementById('amt-max-label').textContent = App.formatCurrency(lt.maxAmount);
+      document.getElementById('tenure-max-label').textContent = lt.maxTenure + ' Months';
+      updateEMI();
+    }
+  }
+
+  function updateEMI() {
+    const lt = App.getLoanType(selectedType);
+    const rate = lt ? lt.rate : 10.5;
+    const principal = Number(document.getElementById('f-amount').value);
+    const tenure = Number(document.getElementById('f-tenure').value);
+    const emi = App.calcEMI(principal, rate, tenure);
+    const totalPayable = emi * tenure;
+    const totalInterest = totalPayable - principal;
+    const interestPct = Math.round((totalInterest / totalPayable) * 100);
+
+    document.getElementById('amt-label').textContent = App.formatCurrency(principal);
+    document.getElementById('tenure-label').textContent = tenure + ' Months';
+    document.getElementById('emi-val').textContent = App.formatCurrency(Math.round(emi));
+    document.getElementById('emi-principal').textContent = App.formatCurrency(principal);
+    document.getElementById('emi-rate').textContent = rate + '% p.a.';
+    document.getElementById('emi-tenure').textContent = tenure + ' Months';
+    document.getElementById('emi-interest').textContent = App.formatCurrency(Math.round(totalInterest));
+    document.getElementById('emi-total').textContent = App.formatCurrency(Math.round(totalPayable));
+    document.getElementById('interest-bar').style.width = interestPct + '%';
+    document.getElementById('bar-interest-pct').textContent = interestPct + '% interest';
+    document.getElementById('bar-principal-pct').textContent = (100 - interestPct) + '% principal';
+  }
+
+  function updateEligibility() {
+    const income = Number(document.getElementById('f-income').value);
+    const age = Number(document.getElementById('f-age').value);
+    const cibil = Number(document.getElementById('f-cibil').value);
+    const employment = document.getElementById('f-emp').value;
+    const loanAmount = Number(document.getElementById('f-amount').value);
+    if (!income && !cibil) return;
+
+    const result = App.calcEligibilityScore({ income, age, cibil, employment, loanAmount, loanType: selectedType });
+    eligibilityScore = result.score;
+
+    const el = document.getElementById('eligibility-result');
+    el.style.display = 'block';
+    document.getElementById('score-val').textContent = result.score;
+
+    const bar = document.getElementById('score-bar');
+    bar.style.width = result.score + '%';
+
+    let color, label;
+    if (result.band === 'green') {
+      color = '#1a7a3c'; label = '✅ Eligible'; bar.style.background = '#27ae60';
+    } else if (result.band === 'yellow') {
+      color = '#a06800'; label = '⚠️ Review Required'; bar.style.background = '#e8a020';
+    } else {
+      color = 'var(--red)'; label = '❌ Abhi Eligible Nahi'; bar.style.background = 'var(--red)';
+    }
+
+    document.getElementById('score-val').style.color = color;
+    document.getElementById('score-lbl').textContent = label;
+    document.getElementById('score-lbl').style.color = color;
+
+    const reasonsEl = document.getElementById('score-reasons');
+    if (result.reasons.length) {
+      reasonsEl.innerHTML = '<strong style="font-size:0.82rem">Improvement Areas:</strong>' +
+        result.reasons.map(r => `<div style="font-size:0.8rem;color:var(--red);margin-top:0.3rem">• ${r}</div>`).join('');
+    } else {
+      reasonsEl.innerHTML = '<div style="font-size:0.82rem;color:#1a7a3c">🌟 Sab kuch accha lag raha hai! Apply karo.</div>';
+    }
+  }
+
+  // Document upload handler
+  function handleUpload(docName, input) {
+    const file = input.files[0];
+    if (!file) return;
+    const allowed = ['application/pdf', 'image/jpeg', 'image/png'];
+    if (!allowed.includes(file.type)) {
+      alert('Sirf PDF, JPG, ya PNG allowed hai!'); return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File size 2MB se zyada nahi honi chahiye!'); return;
+    }
+    uploadedDocs[docName] = file.name;
+    const display = document.getElementById('file-' + docName);
+    display.innerHTML = `
+      <div class="uploaded-file">
+        <span>📄 ${file.name} (${(file.size/1024).toFixed(0)} KB)</span>
+        <button class="remove-btn" onclick="removeDoc('${docName}')">✕</button>
+      </div>
+    `;
+    document.getElementById('zone-' + docName).style.display = 'none';
+  }
+
+  function removeDoc(name) {
+    delete uploadedDocs[name];
+    document.getElementById('file-' + name).innerHTML = '';
+    document.getElementById('zone-' + name).style.display = '';
+    document.getElementById('doc-' + name).value = '';
+  }
+
+  // Submit
+  function submitApplication() {
+    const session = Auth.getSession();
+    if (!session) {
+      document.getElementById('submit-alert').textContent = '⚠️ Pehle login ya register karein!';
+      document.getElementById('submit-alert').className = 'alert alert-warning';
+      document.getElementById('submit-alert').style.display = 'flex';
+      return;
+    }
+
+    // Validate
+    let ok = true;
+    const name  = document.getElementById('f-name').value.trim();
+    const email = document.getElementById('f-email').value.trim();
+    const phone = document.getElementById('f-phone').value.trim();
+    const age   = document.getElementById('f-age').value;
+    const pan   = document.getElementById('f-pan').value.trim();
+    const aadhaar = document.getElementById('f-aadhaar').value.trim();
+    const income = document.getElementById('f-income').value;
+    const emp    = document.getElementById('f-emp').value;
+    const cibil  = document.getElementById('f-cibil').value;
+
+    const show = (id, show) => { const el = document.getElementById(id); el.style.display = show ? 'block' : 'none'; };
+
+    if (!selectedType) { alert('Loan type select karein!'); return; }
+    show('err-name',    !name);        if (!name) ok = false;
+    show('err-email',   !email.includes('@')); if (!email.includes('@')) ok = false;
+    show('err-phone',   phone.length !== 10); if (phone.length !== 10) ok = false;
+    show('err-age',     !age || age < 18 || age > 70); if (!age || age < 18 || age > 70) ok = false;
+    show('err-pan',     pan.length !== 10); if (pan.length !== 10) ok = false;
+    show('err-aadhaar', aadhaar.length !== 12); if (aadhaar.length !== 12) ok = false;
+    show('err-income',  !income); if (!income) ok = false;
+    show('err-emp',     !emp);    if (!emp) ok = false;
+    show('err-cibil',   !cibil || cibil < 300 || cibil > 900); if (!cibil || cibil < 300 || cibil > 900) ok = false;
+
+    if (!ok) {
+      document.getElementById('submit-alert').textContent = '⚠️ Sab required fields fill karein!';
+      document.getElementById('submit-alert').className = 'alert alert-error';
+      document.getElementById('submit-alert').style.display = 'flex';
+      return;
+    }
+
+    const lt = App.getLoanType(selectedType);
+    const amount  = Number(document.getElementById('f-amount').value);
+    const tenure  = Number(document.getElementById('f-tenure').value);
+    const emi     = App.calcEMI(amount, lt.rate, tenure);
+
+    const app = App.submitApplication({
+      userId: session.id,
+      applicantName: name,
+      email, phone,
+      age: Number(age),
+      pan, aadhaar,
+      income: Number(income),
+      employment: emp,
+      cibil: Number(cibil),
+      loanType: selectedType,
+      loanAmount: amount,
+      tenure,
+      emi: Math.round(emi),
+      interestRate: lt.rate,
+      eligibilityScore,
+      docs: Object.values(uploadedDocs)
+    });
+
+    document.getElementById('modal-app-id').textContent = app.id;
+    document.getElementById('success-modal').classList.add('active');
+  }
+
+  // Nav auth
+  if (Auth.isLoggedIn()) {
+    const s = Auth.getSession();
+    const btn = document.getElementById('nav-auth');
+    btn.textContent = '👤 ' + s.name.split(' ')[0];
+    btn.href = 'tracker.html';
+  }
+
+  updateEMI();
+</script>
+</body>
+</html>

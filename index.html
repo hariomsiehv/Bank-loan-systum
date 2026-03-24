@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoanFlow — Online Bank Loan System</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, var(--charcoal) 0%, var(--teal-dark) 60%, var(--teal) 100%);
+      color: var(--white);
+      padding: 5rem 2rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; left: -40px;
+      width: 280px; height: 280px;
+      border-radius: 50%;
+      background: rgba(232,160,32,0.08);
+    }
+    .hero-inner {
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: center;
+      position: relative; z-index: 1;
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(232,160,32,0.18);
+      color: var(--gold-light);
+      border: 1px solid rgba(232,160,32,0.35);
+      padding: 0.35rem 1rem;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+    .hero h1 span { color: var(--gold); }
+    .hero p {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.78);
+      margin-bottom: 2.5rem;
+      max-width: 520px;
+      margin-left: auto; margin-right: auto;
+    }
+    .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    /* Stats bar */
+    .stats-bar {
+      background: var(--white);
+      box-shadow: var(--shadow-md);
+      padding: 1.5rem 2rem;
+    }
+    .stats-bar-inner {
+      max-width: 900px; margin: 0 auto;
+      display: flex; gap: 2rem;
+      justify-content: space-around; flex-wrap: wrap;
+      text-align: center;
+    }
+    .stat-item {}
+    .stat-item .num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--teal-dark);
+    }
+    .stat-item .lbl { font-size: 0.8rem; color: var(--grey-500); font-weight: 500; }
+
+    /* Loan types */
+    .loan-card {
+      border: 2px solid var(--grey-300);
+      border-radius: var(--radius);
+      padding: 1.75rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+      color: var(--text);
+      display: block;
+      background: var(--white);
+    }
+    .loan-card:hover {
+      border-color: var(--teal);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+    .loan-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .loan-name { font-weight: 700; font-size: 1rem; margin-bottom: 0.25rem; }
+    .loan-rate { font-size: 0.85rem; color: var(--teal); font-weight: 600; }
+    .loan-max  { font-size: 0.78rem; color: var(--grey-500); margin-top: 0.2rem; }
+
+    /* Process steps */
+    .process-step {
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+    }
+    .process-num {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--teal);
+      color: var(--white);
+      font-weight: 900;
+      font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .process-text h4 { font-weight: 700; margin-bottom: 0.25rem; }
+    .process-text p  { font-size: 0.88rem; color: var(--grey-500); }
+
+    /* CTA section */
+    .cta-section {
+      background: linear-gradient(135deg, var(--teal-dark), var(--charcoal));
+      color: var(--white);
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+    .cta-section h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+    }
+    .cta-section p { color: rgba(255,255,255,0.7); margin-bottom: 2rem; }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="navbar-brand">Loan<span>Flow</span></a>
+  <div class="nav-links">
+    <a href="index.html" class="active">Home</a>
+    <a href="apply.html">Apply</a>
+    <a href="tracker.html">Track</a>
+    <a href="admin.html">Admin</a>
+    <a href="login.html" class="nav-btn btn">Login / Register</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">🏦 MMMUT Gorakhpur — BIT-155 Project</div>
+    <h1>Smart. Fast.<br><span>Paperless</span> Loans.</h1>
+    <p>
+      Ghar baithe loan ke liye apply karein. EMI calculate karein.
+      Documents upload karein. Status track karein — sab kuch ek jagah.
+    </p>
+    <div class="hero-btns">
+      <a href="apply.html" class="btn btn-primary">🚀 Abhi Apply Karein</a>
+      <a href="login.html" class="btn btn-secondary">Account Banayein</a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<section class="stats-bar">
+  <div class="stats-bar-inner">
+    <div class="stat-item"><div class="num">6</div><div class="lbl">JS Modules</div></div>
+    <div class="stat-item"><div class="num">4</div><div class="lbl">HTML Pages</div></div>
+    <div class="stat-item"><div class="num">₹0</div><div class="lbl">Backend Cost</div></div>
+    <div class="stat-item"><div class="num">100%</div><div class="lbl">Responsive</div></div>
+    <div class="stat-item"><div class="num">6</div><div class="lbl">Loan Types</div></div>
+  </div>
+</section>
+
+<!-- LOAN TYPES -->
+<section class="section" style="background:var(--grey-100)">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:2.5rem">
+      <h2 class="section-title">Humara Loan Products</h2>
+      <p class="section-subtitle">6 tarah ke loans — sab ke liye kuch na kuch</p>
+    </div>
+    <div class="grid-3" id="loan-types-grid"></div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" style="background:var(--white)">
+  <div class="container">
+    <div class="grid-2" style="align-items:center;gap:3rem">
+      <div>
+        <h2 class="section-title">Kaise Kaam Karta Hai?</h2>
+        <p class="section-subtitle" style="margin-bottom:1.5rem">5 simple steps mein loan process complete karein</p>
+        <div class="process-step">
+          <div class="process-num">1</div>
+          <div class="process-text">
+            <h4>Account Banayein</h4>
+            <p>Free mein register karein — 2 minute ka kaam</p>
+          </div>
+        </div>
+        <div class="process-step">
+          <div class="process-num">2</div>
+          <div class="process-text">
+            <h4>Eligibility Check Karein</h4>
+            <p>Income, CIBIL, age — sab fill karein, turant result paayein</p>
+          </div>
+        </div>
+        <div class="process-step">
+          <div class="process-num">3</div>
+          <div class="process-text">
+            <h4>EMI Plan Karein</h4>
+            <p>Slider se amount aur tenure set karein, live EMI dekhein</p>
+          </div>
+        </div>
+        <div class="process-step">
+          <div class="process-num">4</div>
+          <div class="process-text">
+            <h4>Documents Upload Karein</h4>
+            <p>PAN, Aadhaar, income proof — sab online upload karein</p>
+          </div>
+        </div>
+        <div class="process-step">
+          <div class="process-num">5</div>
+          <div class="process-text">
+            <h4>Status Track Karein</h4>
+            <p>Real-time status — Submitted → Review → Approved/Rejected</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="background:linear-gradient(135deg,var(--mint),var(--white))">
+          <h3 style="font-family:'Playfair Display',serif;color:var(--teal-dark);margin-bottom:1.5rem">✨ LoanFlow Kyun?</h3>
+          <div style="display:flex;flex-direction:column;gap:1rem">
+            <div style="display:flex;align-items:center;gap:0.75rem">
+              <span style="font-size:1.5rem">⚡</span>
+              <div><strong>Zero Backend</strong> — localStorage pe sab kaam karta hai</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.75rem">
+              <span style="font-size:1.5rem">📱</span>
+              <div><strong>Mobile Friendly</strong> — phone pe bhi perfect dikhta hai</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.75rem">
+              <span style="font-size:1.5rem">🔒</span>
+              <div><strong>Role-based Auth</strong> — Applicant aur Admin alag login</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.75rem">
+              <span style="font-size:1.5rem">🧮</span>
+              <div><strong>Live EMI Calc</strong> — real formula use hota hai</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.75rem">
+              <span style="font-size:1.5rem">📊</span>
+              <div><strong>Eligibility Scorer</strong> — instant 0–100 score</div>
+            </div>
+          </div>
+          <a href="apply.html" class="btn btn-teal" style="margin-top:2rem;width:100%;justify-content:center">Apply Karo Abhi →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>Tayaar Hain? Abhi Shuru Karein!</h2>
+  <p>No paperwork. No branch visit. No wait.</p>
+  <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+    <a href="login.html" class="btn btn-primary">Free Account Banayein</a>
+    <a href="tracker.html" class="btn btn-secondary">Application Track Karein</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>LoanFlow &mdash; Online Bank Loan System &nbsp;|&nbsp; BIT-155 Design Thinking Project &nbsp;|&nbsp; MMMUT Gorakhpur</p>
+  <p style="margin-top:0.4rem">
+    Submitted by <a href="#">Hariom Prajapati</a> &nbsp;|&nbsp; Roll No: 2025071131 &nbsp;|&nbsp; Session 2025-26
+  </p>
+</footer>
+
+<script src="auth.js"></script>
+<script src="app.js"></script>
+<script>
+  // Render loan type cards
+  const grid = document.getElementById('loan-types-grid');
+  App.getLoanTypes().forEach(lt => {
+    const card = document.createElement('a');
+    card.href = 'apply.html?type=' + lt.id;
+    card.className = 'loan-card fade-in-up';
+    card.innerHTML = `
+      <div class="loan-icon">${lt.icon}</div>
+      <div class="loan-name">${lt.name}</div>
+      <div class="loan-rate">Interest: ${lt.rate}% p.a.</div>
+      <div class="loan-max">Max: ${App.formatCurrency(lt.maxAmount)}</div>
+    `;
+    grid.appendChild(card);
+  });
+
+  // Update navbar login button
+  if (Auth.isLoggedIn()) {
+    const session = Auth.getSession();
+    const loginLink = document.querySelector('.nav-btn');
+    if (loginLink) {
+      loginLink.textContent = '👤 ' + session.name.split(' ')[0];
+      loginLink.href = session.role === 'admin' ? 'admin.html' : 'tracker.html';
+    }
+  }
+</script>
+</body>
+</html>

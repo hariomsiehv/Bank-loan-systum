@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — LoanFlow</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .admin-layout { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 64px); }
+    @media(max-width:768px) { .admin-layout { grid-template-columns: 1fr; } }
+
+    .sidebar {
+      background: var(--charcoal);
+      color: var(--white);
+      padding: 2rem 1rem;
+    }
+    .sidebar h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      color: var(--gold);
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .sidebar-menu { display: flex; flex-direction: column; gap: 0.25rem; }
+    .sidebar-link {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.65rem 1rem;
+      border-radius: var(--radius-sm);
+      color: var(--grey-300);
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+    }
+    .sidebar-link:hover { background: rgba(255,255,255,0.08); color: var(--white); }
+    .sidebar-link.active { background: var(--teal); color: var(--white); }
+
+    .admin-main { padding: 2rem; background: var(--grey-100); overflow-y: auto; }
+
+    .admin-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 2rem;
+    }
+    .admin-header h1 { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--teal-dark); }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; }
+
+    .filter-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .filter-tab {
+      padding: 0.5rem 1.2rem;
+      border-radius: 50px;
+      border: 2px solid var(--grey-300);
+      background: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--grey-500);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .filter-tab.active { border-color: var(--teal); background: var(--teal); color: var(--white); }
+
+    .toolbar {
+      display: flex; gap: 1rem; align-items: center;
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.25rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .toolbar input { flex: 1; border: none; outline: none; font-size: 0.9rem; }
+    .toolbar input::placeholder { color: var(--grey-300); }
+
+    .table-wrap { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; overflow-x: auto; }
+
+    #toast {
+      position: fixed;
+      bottom: 2rem; right: 2rem;
+      z-index: 999;
+      min-width: 280px;
+      display: none;
+      box-shadow: var(--shadow-lg);
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="navbar-brand">Loan<span>Flow</span></a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <span style="color:var(--grey-300);font-size:0.9rem" id="admin-name"></span>
+    <button class="nav-btn btn" id="logout-btn">Logout</button>
+  </div>
+</nav>
+
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h3>🛡 Admin Panel</h3>
+    <div class="sidebar-menu">
+      <a class="sidebar-link active" href="admin.html">📋 All Applications</a>
+      <a class="sidebar-link" href="tracker.html">📊 Tracker</a>
+      <a class="sidebar-link" href="apply.html">📝 New Application</a>
+      <a class="sidebar-link" href="index.html">🏠 Home</a>
+    </div>
+    <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.1)">
+      <div style="font-size:0.75rem;color:var(--grey-500);margin-bottom:0.5rem">DEFAULT ADMIN LOGIN</div>
+      <div style="font-size:0.8rem;color:var(--grey-300)">admin@bank.com</div>
+      <div style="font-size:0.8rem;color:var(--grey-300)">admin123</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="admin-main">
+
+    <div class="admin-header">
+      <h1>📋 Loan Applications</h1>
+      <a href="apply.html" class="btn btn-primary btn-sm">+ Nayi Application</a>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#e8f6f8;color:var(--teal)">📋</div>
+        <div><div class="stat-value" id="stat-total">0</div><div class="stat-label">Total Applications</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fff8e6;color:var(--gold)">⏳</div>
+        <div><div class="stat-value" id="stat-pending">0</div><div class="stat-label">Pending Review</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#e8f8ed;color:#27ae60">✅</div>
+        <div><div class="stat-value" id="stat-approved">0</div><div class="stat-label">Approved</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fdecea;color:var(--red)">❌</div>
+        <div><div class="stat-value" id="stat-rejected">0</div><div class="stat-label">Rejected</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#f0edfb;color:var(--purple)">💰</div>
+        <div><div class="stat-value" id="stat-disbursed" style="font-size:1.2rem">₹0</div><div class="stat-label">Total Disbursed</div></div>
+      </div>
+    </div>
+
+    <!-- FILTER TABS -->
+    <div class="filter-tabs">
+      <button class="filter-tab active" data-status="all">All</button>
+      <button class="filter-tab" data-status="submitted">Submitted</button>
+      <button class="filter-tab" data-status="under_review">Under Review</button>
+      <button class="filter-tab" data-status="approved">Approved</button>
+      <button class="filter-tab" data-status="rejected">Rejected</button>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <span style="color:var(--grey-500);font-size:1.1rem">🔍</span>
+      <input type="text" id="search-input" placeholder="Naam, ID, ya loan type se dhundhein..." />
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <table class="app-table">
+        <thead>
+          <tr>
+            <th>App ID</th>
+            <th>Applicant</th>
+            <th>Loan Type</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="apps-tbody">
+          <tr><td colspan="7">
+            <div class="empty-state">
+              <div class="empty-icon" style="animation:pulse 1.5s infinite">⏳</div>
+              <h3>Loading...</h3>
+            </div>
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal" style="max-width:620px;width:95%;max-height:85vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <div class="modal-title">Application Details</div>
+      <button id="close-detail" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--grey-500)">✕</button>
+    </div>
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="alert"></div>
+
+<script src="auth.js"></script>
+<script src="app.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
